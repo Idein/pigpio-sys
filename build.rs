@@ -4,20 +4,29 @@ use std::env;
 use std::path::PathBuf;
 
 fn main() {
-    // Tell cargo to tell rustc to link the system bzip2
+    // Tell cargo to tell rustc to link the pigpio
     // shared library.
     println!("cargo:rustc-link-lib=pigpio");
 
     // Tell cargo to invalidate the built crate whenever the wrapper changes
     println!("cargo:rerun-if-changed=wrapper.h");
 
+    if let Ok(libdir_path) = env::var("LIBPIGPIO_LIB_PATH") {
+        println!("cargo:rustc-link-search={}", libdir_path);
+    }
+
     // Path to directories of C header
     let include_dirs: Vec<PathBuf> = env::var("LIBCLANG_INCLUDE_PATH")
         .map(|path| vec![PathBuf::from(path)])
         .unwrap_or_default();
 
+    let libgpio_include_dirs = env::var("LIBPIGPIO_INCLUDE_PATH")
+        .map(|path| vec![PathBuf::from(path)])
+        .unwrap_or_default();
+
     let include_args: Vec<_> = include_dirs
         .iter()
+        .chain(libgpio_include_dirs.iter())
         .flat_map(|path| vec!["-I", path.to_str().unwrap()])
         .collect();
     println!("cargo:warning={:?}", include_args);
