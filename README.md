@@ -24,6 +24,14 @@ For cross compiling, some more configurations are required.
 
 #### Example (build for raspberrypi)
 
+If docker is used, call following command:
+
+```sh
+docker-compose run --rm cross-builder
+```
+
+or building manually:
+
 ```sh
 pigpio-sys$ cat <<EOF > .cargo/config
 [target.arm-unknown-linux-gnueabihf]
@@ -33,7 +41,7 @@ EOF
 pigpio-sys$ export LIBCLANG_INCLUDE_PATH=/usr/include/clang/7/include
 pigpio-sys$ export LIBPIGPIO_LIB_PATH=/path/to/lib
 pigpio-sys$ export LIBPIGPIO_INCLUDE_PATH=/path/to/include
-pigpio-sys$ cargo build --target=arm-unknown-linux-gnueabihf
+pigpio-sys$ cargo build --examples --target=arm-unknown-linux-gnueabihf
 ```
 
 ### Required package

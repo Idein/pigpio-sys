@@ -1,0 +1,36 @@
+services:
+  cross-rpi-rust: &cross-rust-env
+    image: rust:1.56.0-buster
+    container_name: cross-rpi-rust
+    environment:
+      - TARGET_ARCH=arm-unknown-linux-gnueabihf
+      - LIBCLANG_INCLUDE_PATH=/usr/include/clang/7/include
+      - LIBPIGPIO_LIB_PATH=/usr/lib
+      - LIBPIGPIO_INCLUDE_PATH=/usr/include
+    volumes:
+      - .:/tmp/pigpio-sys
+      - cargo-cache:/tmp/.cargo
+    working_dir: /tmp/pigpio-sys
+
+  # build project for RaspberryPi
+  cross-builder:
+    << : *cross-rust-env
+    command: |
+      bash -c "
+      echo 'deb [arch=armhf] https://archive.raspbian.org/raspbian/ buster main' > /etc/apt/sources.list.d/raspbian.list
+      wget -q -O- https://archive.raspbian.org/raspbian.public.key | apt-key add -
+      dpkg --add-architecture armhf
+      apt-get update
+      apt-get install -y llvm-dev libclang-7-dev libc6-dev gcc-arm-linux-gnueabihf
+      (
+        cd /tmp
+        apt-get download libpigpio1:armhf libpigpio-dev:armhf libc6-dev:armhf libclang-common-7-dev:armhf libclang-7-dev:armhf
+        for deb in *.deb; do dpkg -x $$deb / ; done
+      )
+      rustup target add $${TARGET_ARCH}
+      cargo build --target=$${TARGET_ARCH}
+      cargo build --target=$${TARGET_ARCH} --examples
+      "
+
+volumes:
+  cargo-cache:
