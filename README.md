@@ -22,7 +22,7 @@ Some parameters are used in build.rs.
 For cross compiling, some more configurations are required.
 
 
-#### Example (build for armhf)
+#### Example (build for raspberrypi)
 
 ```sh
 pigpio-sys$ cat <<EOF > .cargo/config
