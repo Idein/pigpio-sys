@@ -7,6 +7,9 @@ fn main() {
     println!("cargo:rustc-link-lib=pigpio");
 
     println!("cargo:rerun-if-changed=wrapper.h");
+    println!("cargo:rerun-if-env-changed=LIBCLANG_INCLUDE_PATH");
+    println!("cargo:rerun-if-env-changed=LIBPIGPIO_INCLUDE_PATH");
+    println!("cargo:rerun-if-env-changed=LIBPIGPIO_LIB_PATH");
 
     if let Ok(libdir_path) = env::var("LIBPIGPIO_LIB_PATH") {
         println!("cargo:rustc-link-search={}", libdir_path);
