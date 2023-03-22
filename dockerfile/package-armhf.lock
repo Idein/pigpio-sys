@@ -1,0 +1,7 @@
+{
+  "libc6-dev": "2.28-10+rpi1+deb10u2",
+  "libclang-common-7-dev": "1:7.0.1-8+deb10u2",
+  "libclang-7-dev": "1:7.0.1-8+deb10u2",
+  "libpigpio-dev": "1.68-3+rpi1",
+  "libpigpio1": "1.68-3+rpi1"
+}

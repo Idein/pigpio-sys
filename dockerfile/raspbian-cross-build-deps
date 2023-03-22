@@ -1,0 +1,40 @@
+#!/bin/bash
+set -uex
+
+PREFIX=/
+SYSROOT=
+PKGS=$(readlink -f $(dirname ${BASH_SOURCE:-$0})/package-armhf.lock)
+
+apt-get install -y gnupg apt-transport-https jq \
+    llvm-dev libclang-7-dev libc6-dev gcc-arm-linux-gnueabihf
+
+function update_package_list {
+	if [[ -f /etc/apt/sources.list.d/raspbian.list ]]; then
+		return
+	fi
+	# Workaround for https://github.com/Idein/docker-cross-rpi/pull/6
+	apt-get install -y --only-upgrade libgnutls30
+	echo 'deb [arch=armhf] https://archive.raspbian.org/raspbian/ buster main' | tee /etc/apt/sources.list.d/raspbian.list
+	wget -q -O- https://archive.raspbian.org/raspbian.public.key | apt-key add -
+    dpkg --add-architecture armhf
+	apt-get update -y
+}
+
+mkdir -p $PREFIX/packages
+pushd $PREFIX/packages
+chmod 777 . # apt-get downloads packages as a non-root user called '_apt'
+
+jq -M -r 'keys[] as $k | "\($k) \(.[$k])"' $PKGS | while read PKG
+do
+	set -- $PKG
+	if [[ ! -f $1_$2_armhf.deb ]]; then
+		update_package_list
+		apt-get download $1:armhf=$2
+		if [[ ! -f $1_$2_armhf.deb ]]; then
+			mv $1_*_armhf.deb $1_$2_armhf.deb  # avoid URI encode problem
+		fi
+	fi
+	dpkg -x $1_$2_armhf.deb $SYSROOT/
+done
+popd
+
